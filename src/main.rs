@@ -120,11 +120,10 @@ fn main() {
     //arg2
     new_context.rax = 0;
 
-    //arg1 again but on the stack
-    //why is this neccessary? :(
-    //TODO figure out why LOL
+    //pointer to a writeable piece of memory
+    //TODO figure out why this is necessary LOL
     mem.seek(SeekFrom::Start(new_context.rsp - 8)).unwrap();
-    mem.write_all(&original_context.rsp.to_le_bytes()).unwrap();
+    mem.write_all(&new_context.rsp.to_le_bytes()).unwrap();
 
     new_context.rsp -= 8;
 
@@ -141,7 +140,6 @@ fn main() {
         let _waitpid_thread = std::thread::spawn(move || {
             let mut status = 0i32;
             while libc::waitpid(pid as i32, &mut status as _, libc::__WALL) != -1 {
-                println!("status {}", libc::WSTOPSIG(status));
                 let _ = tx.send(status);
             }
         });
